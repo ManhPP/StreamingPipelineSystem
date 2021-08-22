@@ -1,16 +1,39 @@
-# This is a sample Python script.
+from pyspark.sql import SparkSession
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+spark = SparkSession\
+       .builder\
+       .appName("StructuredKafka")\
+       .getOrCreate()
 
+spark.sparkContext.setLogLevel("ERROR")
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+# Create DataSet representing the stream of input lines from kafka
+lines = spark\
+   .readStream\
+   .format("kafka")\
+   .option("kafka.bootstrap.servers", "172.23.0.10:19091")\
+   .option("subscribe", "topic1")\
+   .load()\
+   .selectExpr("CAST(value AS STRING)")
 
+print("======================")
+# Start running the query that prints the running counts to the console
+query = lines\
+   .writeStream\
+   .format('console')\
+   .start()
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+lines.writeStream \
+  .queryName("Persist the raw data of Taxi Rides") \
+  .outputMode("append") \
+  .format("json") \
+  .option("path", "hdfs://namenode:8020/tmp/datalake/RidesRaw") \
+  .option("checkpointLocation", "hdfs://namenode:8020/tmp/checkpoints/RidesRaw") \
+  .option("truncate", False) \
+  .start() \
+  .awaitTermination()
+print("**********************")
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+query.awaitTermination()
+# spark/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0 /opt/spark-data/test_pyspark.py
+# spark.read.json("hdfs://namenode:8020/tmp/datalake/RidesRaw")
