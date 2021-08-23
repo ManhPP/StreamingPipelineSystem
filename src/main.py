@@ -2,7 +2,7 @@ from pyspark.sql import SparkSession
 
 spark = SparkSession\
        .builder\
-       .appName("StructuredKafka")\
+       .appName("StreamingPipelineApplication")\
        .getOrCreate()
 
 spark.sparkContext.setLogLevel("ERROR")
@@ -11,7 +11,7 @@ spark.sparkContext.setLogLevel("ERROR")
 lines = spark\
    .readStream\
    .format("kafka")\
-   .option("kafka.bootstrap.servers", "172.23.0.10:19091")\
+   .option("kafka.bootstrap.servers", "kafka1:19091")\
    .option("subscribe", "topic1")\
    .load()\
    .selectExpr("CAST(value AS STRING)")
@@ -24,11 +24,11 @@ query = lines\
    .start()
 
 lines.writeStream \
-  .queryName("Persist the raw data of Taxi Rides") \
+  .queryName("Query 1") \
   .outputMode("append") \
   .format("json") \
-  .option("path", "hdfs://namenode:8020/tmp/datalake/RidesRaw") \
-  .option("checkpointLocation", "hdfs://namenode:8020/tmp/checkpoints/RidesRaw") \
+  .option("path", "hdfs://namenode:8020/tmp/data/sps") \
+  .option("checkpointLocation", "hdfs://namenode:8020/tmp/checkpoints/sps") \
   .option("truncate", False) \
   .start() \
   .awaitTermination()
@@ -36,4 +36,7 @@ print("**********************")
 
 query.awaitTermination()
 # spark/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0 /opt/spark-data/test_pyspark.py
-# spark.read.json("hdfs://namenode:8020/tmp/datalake/RidesRaw")
+# spark.read.json("hdfs://namenode:8020/tmp/datalake/RidesRaw") spark/bin/spark-submit --packages
+# --master spark://spark-master:7077 --deploy-mode cluster
+# --driver-memory 4g
+# --executor-memory 2g
