@@ -1,6 +1,6 @@
 import time
 
-from kafka import KafkaProducer
+from confluent_kafka import Producer
 import json
 from faker import Faker
 
@@ -20,7 +20,7 @@ def json_serializer(data):
     return json.dumps(data).encode("utf-8")
 
 
-producer = KafkaProducer(bootstrap_servers="localhost:9091", value_serializer=json_serializer)
+producer = Producer(**{"bootstrap.servers": "localhost:9092"})
 
 
 if __name__ == "__main__":
@@ -28,6 +28,7 @@ if __name__ == "__main__":
     while 1 == 1:
         registered_user = get_registered_user()
         print(registered_user)
-        producer.send("topic1", registered_user)
+        producer.produce("topic1", value=json_serializer(registered_user))
         producer.flush()
-        time.sleep(20)
+        time.sleep(10)
+

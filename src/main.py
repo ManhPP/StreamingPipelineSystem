@@ -13,6 +13,8 @@ lines = spark\
    .format("kafka")\
    .option("kafka.bootstrap.servers", "kafka1:19091")\
    .option("subscribe", "topic1")\
+   .option("startingOffsets", "earliest")\
+   .option("groupIdPrefix", "topic1")\
    .load()\
    .selectExpr("CAST(value AS STRING)")
 
