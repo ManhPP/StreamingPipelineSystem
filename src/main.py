@@ -1,8 +1,17 @@
 from pyspark.sql import SparkSession
 
+conf = {
+    "app_name": "StreamingPipelineApplication",
+    "broker": "kafka1:19091",
+    "topic": "topic1",
+    "query_name": "q1",
+    "path": "hdfs://namenode:8020/tmp/data/sps",
+    "checkpoint_location": "hdfs://namenode:8020/tmp/checkpoints/sps"
+}
 spark = SparkSession\
        .builder\
-       .appName("StreamingPipelineApplication")\
+       .appName(conf["app_name"])\
+       .config("spark.streaming.stopGracefullyOnShutdown", "true")\
        .getOrCreate()
 
 spark.sparkContext.setLogLevel("ERROR")
@@ -11,10 +20,9 @@ spark.sparkContext.setLogLevel("ERROR")
 lines = spark\
    .readStream\
    .format("kafka")\
-   .option("kafka.bootstrap.servers", "kafka1:19091")\
-   .option("subscribe", "topic1")\
-   .option("startingOffsets", "earliest")\
-   .option("groupIdPrefix", "topic1")\
+   .option("kafka.bootstrap.servers", conf["broker"])\
+   .option("subscribe", conf["topic"])\
+   .option("startingOffsets", "earliest") \
    .load()\
    .selectExpr("CAST(value AS STRING)")
 
@@ -26,11 +34,11 @@ query = lines\
    .start()
 
 lines.writeStream \
-  .queryName("Query 1") \
+  .queryName(conf["query_name"]) \
   .outputMode("append") \
   .format("json") \
-  .option("path", "hdfs://namenode:8020/tmp/data/sps") \
-  .option("checkpointLocation", "hdfs://namenode:8020/tmp/checkpoints/sps") \
+  .option("path", conf["path"]) \
+  .option("checkpointLocation", conf["checkpoint_location"]) \
   .option("truncate", False) \
   .start() \
   .awaitTermination()

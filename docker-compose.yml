@@ -175,3 +175,11 @@ services:
       - ./data/hadoop_historyserver:/hadoop/yarn/timeline
     env_file:
       - ./hadoop.env
+
+  pyspark:
+    image: jupyter/pyspark-notebook
+    container_name: pyspark-notebook
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./src:/home/jovyan/work/
