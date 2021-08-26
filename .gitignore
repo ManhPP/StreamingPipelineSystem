@@ -286,4 +286,6 @@ cython_debug/
 pyvenv.cfg
 pip-selfcheck.json
 
+data
+.metals/
 # End of https://www.toptal.com/developers/gitignore/api/pycharm+all,python,jupyternotebooks,macos,virtualenv

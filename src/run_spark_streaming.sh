@@ -1,1 +1,1 @@
-spark/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0 /opt/spark-data/main.py --master spark://spark-master:7077 --deploy-mode cluster --driver-memory 4g --executor-memory 2g
+spark/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.0 /opt/spark-data/covid_main.py --master spark://spark-master:7077 --deploy-mode cluster --driver-memory 4g --executor-memory 2g
